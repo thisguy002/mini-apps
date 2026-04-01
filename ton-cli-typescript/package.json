@@ -1,0 +1,26 @@
+{
+  "name": "ton-cli-typescript",
+  "version": "0.1.0",
+  "description": "TypeScript CLI toolkit for TON blockchain development.",
+  "type": "module",
+  "bin": {
+    "ton-cli": "bin/ton-cli.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "lint": "echo 'Add eslint later if needed'"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@chainlink/env-enc": "^1.0.5",
+    "@ton-api/client": "^0.4.0",
+    "@ton/core": "^0.63.1",
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^16.2.2",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "typescript": "^5.9.3"
+  }
+}
