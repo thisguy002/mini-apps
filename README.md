@@ -4,6 +4,8 @@ A monorepo showcasing the best mini-apps and demo projects I've built over the p
 
 ## Mini-Apps
 
+- [Hyperliquid API](/hyperliquid-api/). A Hyperliquid API documentation, optimized for OpenAPI and Mintlify.
+
 - [TON CLI TypeScript](/ton-cli-typescript/). An unofficial TypeScript CLI for the TON blockchain. Demonstrates core use cases including wallet creation, balance tracking, asset transfers, Jetton operations, and more.
 
 - [TON Appkit Starter](/ton-appkit-starter/). A starter kit for Telegram Mini Apps using TON AppKit, React, TypeScript, and Vite. Features wallet connection, balance monitoring, and TON transfers.

@@ -1,0 +1,162 @@
+---
+title: 'Overview'
+description: 'Overview of the Hyperliquid API reference documentation'
+---
+
+## Welcome
+
+Welcome to the Hyperliquid API reference documentation! This documentation provides a comprehensive overview of the Hyperliquid API, including its endpoints, data structures, and usage guidelines. 
+Whether you're a developer looking to integrate with Hyperliquid or simply want to understand how the API works, this documentation is here to help you navigate through the various features and functionalities of the Hyperliquid platform.
+
+The current version of documentation has the following references:
+- Exchange Reference
+- Perpetuals Info Reference
+- Spot Info Reference
+
+## Notation
+
+The current v0 API currently uses some nonstandard notation. Relevant standardization will be batched into a breaking v1 API change.
+
+<table><thead><tr><th width="231.33333333333331">Abbreviation</th><th>Full name</th><th>Explanation</th></tr></thead><tbody><tr><td>Px</td><td>Price</td><td></td></tr><tr><td>Sz</td><td>Size</td><td>In units of coin, i.e. base currency</td></tr><tr><td>Szi</td><td>Signed size </td><td>Positive for long, negative for short</td></tr><tr><td>Ntl</td><td>Notional</td><td>USD amount, Px * Sz </td></tr><tr><td>Side</td><td>Side of trade or book</td><td>B = Bid = Buy, A = Ask = Short. Side is aggressing side for trades.</td></tr><tr><td>Asset</td><td>Asset</td><td>An integer representing the asset being traded. See below for explanation</td></tr><tr><td>Tif</td><td>Time in force</td><td>GTC = good until canceled, ALO = add liquidity only (post only), IOC = immediate or cancel</td></tr></tbody></table>
+
+## Asset IDs
+
+Asset IDs are the integer representation for sending orders and cancels via actions. See [here](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint) for more details.
+
+### Perps
+
+Perpetual endpoints expect an integer for `asset`, which is the index of the coin found in the `meta` info response. E.g. `BTC = 0` on mainnet.
+
+Builder-deployed perps expect `100000 + perp_dex_index * 10000 + index_in_meta` . For example, `test:ABC` on testnet has `perp_dex_index = 1` ,`index_in_meta = 0` , `asset = 110000` . Note that builder-deployed perps always have name in the format `{dex}:{coin}` .
+
+### Spot
+
+Spot endpoints expect `10000 + spotInfo["index"]` where `spotInfo` is the corresponding object in `spotMeta` that has the desired quote and base tokens. For example, when submitting an order for `PURR/USDC`, the asset that should be used is `10000` because its asset index in the spot info is `0`.
+
+Note that spot ID is different from token ID, and that mainnet and testnet have different asset IDs. For example, for HYPE:
+
+Mainnet token ID: 150
+
+Mainnet spot ID: 107
+
+Testnet token ID: 1105
+
+Testnet spot ID: 1035
+
+### Outcomes
+
+Outcomes share most implementation details with spot trading, with a different token representing each outcome side. However, the API representation of outcomes is different from both spot and perps.
+
+Outcome assets are derived from an `outcome` id plus a binary `side`. These are found in the `outcomeMeta` info response.
+
+For an outcome with id `outcome` and side `side`:
+
+```
+encoding = 10 * outcome + side
+```
+
+Only side `0` and side `1` are valid.
+
+Example:
+
+* outcome `1`, side `0` -> encoding `10`
+
+The same `encoding` is used in three different representations:
+
+* Outcome spot coin: `#<encoding>`
+* Outcome token name: `+<encoding>`
+* Outcome asset ID: `100_000_000 + encoding`
+
+Example:
+
+* `#10` = outcome `1`, side `0`
+* `+10` = the corresponding token name
+* `100000010` = asset ID
+
+## Tick and lot size
+
+Both Price (px) and Size (sz) have a maximum number of decimals that are accepted.&#x20;
+
+Prices can have up to 5 significant figures, but no more than `MAX_DECIMALS - szDecimals` decimal places where `MAX_DECIMALS` is 6 for perps and 8 for spot. Integer prices are always allowed, regardless of the number of significant figures. E.g. `123456` is a valid price even though `12345.6` is not.
+
+Sizes are rounded to the `szDecimals` of that asset. For example, if `szDecimals = 3` then `1.001` is a valid size but `1.0001` is not.&#x20;
+
+`szDecimals` for an asset is found in the meta response to the info endpoint
+
+### Perp price examples
+
+`1234.5` is valid but `1234.56` is not (too many significant figures)
+
+`0.001234` is valid, but `0.0012345` is not (more than 6 decimal places)
+
+If `szDecimals = 1` , `0.01234` is valid but `0.012345` is not (more than `6 - szDecimals` decimal places)
+
+### Spot price examples
+
+`0.0001234` is valid if `szDecimals` is 0 or 1, but not if `szDecimals` is greater than 2 (more than 8-2 decimal places).&#x20;
+
+### Signing
+
+Note that if implementing signing, trailing zeroes should be removed. See [Signing](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/signing) for more details.
+
+## Nonces and API wallets
+
+### Background&#x20;
+
+A decentralized L1 must prevent replay attacks. When a user signs a USDC transfer transaction, the receiver cannot broadcast it multiple times to drain the sender's wallet. To solve this Ethereum stores a "nonce" for each address, which is a number that starts at 0. Each transaction must use exactly "nonce + 1" to be included.
+
+### API wallets
+
+These are also known as `agent wallets` in the docs. A master account can approve API wallets to sign on behalf of the master account or any of the sub-accounts.&#x20;
+
+Note that API wallets are only used to sign. To query the account data associated with a master or sub-account, you must pass in the actual address of that account. A common pitfall is to use the agent wallet which leads to an empty result.
+
+### API wallet pruning
+
+API wallets and their associated nonce state may be pruned in the following cases:
+
+1. The wallet is deregistered. This happens to an existing unnamed API Wallet when an ApproveAgent action is sent to register a new unnamed API Wallet. This also happens to an existing named API Wallet when an ApproveAgent action is sent with a matching name.
+2. The wallet expires.
+3. The account that registered the agent no longer has funds.
+
+**Important:** for those using API wallets programmatically, it is **strongly** suggested to not reuse their addresses. Once an agent is deregistered, its used nonce state may be pruned. Generate a new agent wallet on future use to avoid unexpected behavior. For example, previously signed actions can be replayed once the nonce set is pruned.
+
+### Hyperliquid nonces&#x20;
+
+Ethereum's design does not work for an onchain order book. A market making strategy can send thousands of orders and cancels in a second. Requiring a precise ordering of inclusion on the blockchain will break any strategy.
+
+On Hyperliquid, the 100 highest nonces are stored per address. Every new transaction must have nonce larger than the smallest nonce in this set and also never have been used before. Nonces are tracked per signer, which is the user address if signed with private key of the address, or the agent address if signed with an API wallet.&#x20;
+
+Nonces must be within `(T - 2 days, T + 1 day)`, where `T` is the unix millisecond timestamp on the block of the transaction.
+
+The following steps may help port over an automated strategy from a centralized exchange:
+
+1. Use a API wallet per trading process. Note that nonces are stored per signer (i.e. private key), so separate subaccounts signed by the same API wallet will share the nonce tracker of the API wallet. It's recommended to use separate API wallets for different subaccounts.
+2. In each trading process, have a task that periodically batches order and cancel requests every 0.1 seconds. It is recommended to batch IOC and GTC orders separately from ALO orders because ALO order-only batches are prioritized by the validators.
+3. The trading logic tasks send orders and cancels to the batching task.
+4. For each batch of orders or cancels, fetch and increment an atomic counter that ensures a unique nonce for the address. The atomic counter can be fast-forwarded to current unix milliseconds if needed.
+
+This structure is robust to out-of-order transactions within 2 seconds, which should be sufficient for an automated strategy geographically near an API server.
+
+### Suggestions for subaccount and vault users
+
+Note that nonces are stored per signer, which is the address of the private key used to sign the transaction. Therefore, it's recommended that each trading process or frontend session use a separate private key for signing. In particular, a single API wallet signing for a user, vault, or subaccount all share the same nonce set.
+
+If users want to use multiple subaccounts in parallel, it would easier to generate two separate API wallets under the master account, and use one API wallet for each subaccount. This avoids collisions between the nonce set used by each subaccount.
+
+## Activation gas fee
+
+New HyperCore accounts require 1 quote token (e.g., 1 USDC, 1 USDT, or 1 USDH) of fees for the first transaction which has the new account as destination address. This applies regardless of the asset being transfered to the new account.&#x20;
+
+Unactivated accounts cannot send CoreWriter actions. Contract deployers who do not want this one-time behavior could manually send an activation transaction to the EVM contract address on HyperCore.&#x20;
+
+## Optimizing latency
+
+The following optimizations may help latency-sensitive traders:
+
+1. Run a non-validating node against a reliable peer, such as Hyper Foundation non-validator.&#x20;
+2. Run node with `--disable-output-file-buffering` to get outputs as soon as blocks are executed
+3. Run node with sufficient machines specs, at least 32 logical cores and 500 MB/s disk throughput. Increasing cores can reduce latency because blocks will be faster to execute.
+4. Construct book and other exchange state locally using outputs from node, which has faster and more granular data than the API. See [order_book_server](https://github.com/hyperliquid-dex/order_book_server) for an example on how to build an order book on the same machine that is running a node.
+5. `--batch-by-block` on the node will wait until the end of the block to write the data. The example order book server above uses this to simplify logic, but a further optimization could include turning the flag off and inferring block boundaries otherwise.
+6. Consider canceling pending orders by invalidating the nonce instead of spamming the cancelation action. This will save on user rate limits and have a guaranteed success rate if the nonce invalidation transaction lands first. A cheap transaction to use for nonce invalidation is `noop` with no additional fields.

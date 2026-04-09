@@ -1,0 +1,113 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Hyperliquid API Documentation",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Get Started",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/rate-limits",
+              "api-reference/error-responses",
+              "api-reference/signing",
+              "api-reference/bridge2",
+              "api-reference/deploying-hip12-assets",
+              "api-reference/deploying-hip3"
+            ]
+          },
+          {
+            "group": "Exchange Reference",
+            "openapi": {
+              "source": "exchange-reference/exchange.yaml",
+              "directory": "exchange-reference"
+            }
+          },
+          {
+            "group": "Perpetuals Info Reference",
+            "openapi": {
+              "source": "info-reference/perpetuals.yaml",
+              "directory": "info-reference"
+            }
+          }, 
+          {
+            "group": "Spot Info Reference",
+            "openapi": {
+              "source": "info-reference/spot.yaml",
+              "directory": "info-reference"
+            }
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Github",
+          "href": "https://github.com/hyperliquid-dex",
+          "icon": "newspaper"
+        },
+        {
+          "anchor": "Faucet",
+          "href": "https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/testnet-faucet",
+          "icon": "link"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:hi@mintlify.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.mintlify.com"
+    }
+  },
+  "contextual": {
+    "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude",
+     "perplexity",
+     "mcp",
+     "cursor",
+     "vscode"
+   ]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/HyperliquidX",
+      "github": "https://github.com/hyperliquid-dex"
+    }
+  }
+}
