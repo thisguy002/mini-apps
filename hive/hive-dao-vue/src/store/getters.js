@@ -1,0 +1,102 @@
+export default {
+  // proposals
+  proposalsByVotesStatus: state => (votesStatus, status) => {
+      
+  if (!state.returnProposal.length) {
+    console.log("EARLY EXIT: no returnProposal");
+    return [];
+  }
+  
+  const returningVotes = state.returnProposal[0].total_votes;
+  
+  // if it's a raw string from API, convert it
+  if (typeof returningVotes === 'string') {
+    returningVotes = (Number(returningVotes) * state.steemPerMVest) / 1000000000;
+  }
+
+  if (returningVotes === 0) return [];
+
+  let newproposals = [];
+
+  if (votesStatus === "passing") {
+    if (status !== "all" && status !== "tbd") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) >= returningVotes && p.status === status
+      );
+    } else if (status === "all") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) >= returningVotes && p.status !== "expired"
+      );
+    } else if (status === "tbd") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) > returningVotes && p.creator === "tbd"
+      );
+    }
+  }
+
+  if (votesStatus === "insufficient") {
+    if (status !== "all" && status !== "tbd") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) < returningVotes && p.status === status
+      );
+    } else if (status === "all") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) < returningVotes && p.status !== "expired"
+      );
+    } else if (status === "tbd") {
+      newproposals = state.proposals.filter(
+        p => Number(p.total_votes) < returningVotes && p.creator === "tbd"
+      );
+    }
+  }
+
+  return newproposals;
+},
+  totalProposals: state => state.proposals.length,
+  totalProposalsByVotesStatus: (state, getters) => status => {
+    if (getters.proposalsByVotesStatus(status)) {
+      return getters.proposalsByVotesStatus(status).length;
+    }
+  },
+  proposalsByStatus: state => status => {
+    return state.proposals.filter(p => p.status === status);
+  },
+  totalProposalsByStatus: state => status => {
+    return state.proposals.filter(p => p.status === status).length;
+  },
+  workerProposals: state => worker => {
+    return state.proposals.filter(proposal => proposal.creator === worker);
+  },
+  workerProposalsByStatus: state => (worker, status) => {
+    return state.proposals.filter(
+      proposal => proposal.creator === worker && proposal.status === status
+    );
+  },
+  totalWorkerProposalsByStatus: state => (worker, status) => {
+    return state.proposals.filter(
+      proposal => proposal.creator === worker && proposal.status === status
+    ).length;
+  },
+  accountSP: state => name => {
+    let account = state.accounts.find(account => account.name === name);
+    let steemPerMVest = state.steemPerMVest;
+    let totalSP,
+      voterSP,
+      proxySP = 0;
+    if (account !== undefined) {
+      voterSP = (parseFloat(account.vesting_shares) * steemPerMVest) / 1000;
+      proxySP =
+        (parseFloat(account.proxied_vsf_votes[0]) * steemPerMVest) / 1000000000;
+      totalSP = voterSP + proxySP;
+      return totalSP;
+    }
+  },
+  // workers
+  workers: state => {
+    state.workers = [...new Set(state.proposals.map(p => p.creator))];
+    return state.workers;
+  },
+  // high level data
+  totalProposals: state => state.proposals.length,
+  totalWorkers: state => state.workers.length
+};

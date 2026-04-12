@@ -15,3 +15,5 @@ A monorepo showcasing the best mini-apps and demo projects I've built over the p
 - [Chainlink Graph App](/chainlink-graph-app/). A demo application showcasing The Graph queries to monitor price feed updates from Chainlink oracles for any given address.
 
 - [OMG Network Samples App](/omgnetwork-samples-app/). A JavaScript application demonstrating usage of the `omg-js` library. Covers deposits, wallet-to-wallet transfers, exits, UTXO management, and challenging invalid exits. Built during my time at OMG Network.
+
+- [Hive](/hive/). A set of web apps for Hive ecosystem. Contains implementation for blockchain explorers and governance/proposal systems. Built while managing a Hive validator node.
