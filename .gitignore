@@ -1,5 +1,6 @@
 .env
 .env.enc
 .DS_STORE
+.vscode
 node_modules
 dist

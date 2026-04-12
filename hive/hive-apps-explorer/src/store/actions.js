@@ -1,0 +1,89 @@
+import axios from 'axios'
+
+export default {
+  async fetchLatestBlock ({ commit, dispatch }, blockId) {
+    const url = import.meta.env.VITE_HIVE_MAINNET
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    const body = {
+      jsonrpc: '2.0',
+      method: 'condenser_api.get_dynamic_global_properties',
+      id: 1,
+      params: []
+    }
+    await axios.post(url, body, headers)
+      .then(response => {
+        blockId = parseInt(response.data.result.head_block_number)
+        commit('SET_LATEST_BLOCK_ID', blockId)
+        dispatch('fetchBlockById', blockId)
+        return blockId
+      })
+      .catch(() => {
+        return []
+      })
+  },
+    fetchDapps ({ commit, state }) {
+    commit('SET_DAPPS', state.dapps)
+  },
+  async fetchTransactionById ({ commit }, trxId) {
+    const baseUrl = import.meta.env.VITE_HIVE_MAINNET
+    await axios.get(`${baseUrl}/get_transaction?trx_id=${trxId}`)
+      .then(response => {
+        commit('SET_TRANSACTION', response.data)
+        return response.data
+      })
+      .catch(() => {
+        return []
+      })
+  },
+  async fetchBlockById ({ commit }, blockId) {
+    const url = import.meta.env.VITE_HIVE_MAINNET
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    const body = {
+      jsonrpc: '2.0',
+      method: 'condenser_api.get_block',
+      id: 1,
+      params: [`${blockId}`]
+    }
+    await axios.post(url, body, headers)
+      .then(response => {
+        commit('SET_BLOCK', response.data.result)
+        commit('SET_TRANSACTIONS', response.data.result.transactions)
+        return response.data.result
+      })
+      .catch(() => {
+        return []
+      })
+  },
+  async fetchTribesTokens ({ commit }, limit) {
+    const contractsUrl = `${import.meta.env.VITE_STEEMENGINE_API}/contracts`
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    const body = {
+      jsonrpc: '2.0',
+      method: 'find',
+      id: '1',
+      params: {
+        'contract': 'tokens',
+        'table': 'tokens',
+        'query': {},
+        'limit': limit,
+        'offset': 0, 
+        'indexes': []
+        }
+    }
+    await axios.post(contractsUrl, body, headers)
+      .then(response => {
+        let tokens = response.data.result
+        commit('SET_TRIBES_TOKENS', tokens)
+        return tokens
+      })
+      .catch(() => {
+        return []
+      })
+  }
+}
