@@ -10,6 +10,8 @@ A monorepo showcasing the best mini-apps and demo projects I've built over the p
 
 - [TON Appkit Starter](/ton-appkit-starter/). A starter kit for Telegram Mini Apps using TON AppKit, React, TypeScript, and Vite. Features wallet connection, balance monitoring, and TON transfers.
 
+- [Hello World TON](/hello-world-ton/). A sample project that sets and retrieves messages in a TON smart contract onchain.
+
 - [Myria Samples App](/myria-samples-app/). A Typescript application for the Myria ecosystem. Includes practical examples for creating projects, launching NFT collections, and minting assets using the `myria-core-sdk`. Built while working at Myria.
 
 - [Chainlink Graph App](/chainlink-graph-app/). A demo application showcasing The Graph queries to monitor price feed updates from Chainlink oracles for any given address.
