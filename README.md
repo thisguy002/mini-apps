@@ -12,6 +12,8 @@ A monorepo showcasing the best apps and projects I've built over the past few ye
 
 ## Side projects, demos, experiments
 
+- [WDK](https://github.com/thisonedev/wdk). Module implementation, code samples and documentation for `wdk-wallet-sui`.
+
 - [Hyperliquid API](/hyperliquid-api/). A Hyperliquid API documentation, optimized for OpenAPI and Mintlify.
 
 - [TON CLI TypeScript](/ton-cli-typescript/). An unofficial TypeScript CLI for the TON blockchain. Demonstrates core use cases including wallet creation, balance tracking, asset transfers, Jetton operations, and more.
